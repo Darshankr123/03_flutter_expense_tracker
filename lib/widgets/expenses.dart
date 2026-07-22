@@ -14,38 +14,53 @@ class Expenses extends StatefulWidget {
 }
 
 class _ExpensesState extends State<Expenses> {
+  final DateTime date = DateTime.now();
 
-  void _openExpenseModalOverlay(){
-    showModalBottomSheet(context: context, builder: (ctx){
-      return const NewExpense();
+  late final List<Expense> expensesList = [
+    Expense(
+      title: "Flutter Course",
+      amount: 19.89,
+      date: DateTime(date.year, date.day, date.hour),
+      category: Category.Work,
+    ),
+    Expense(
+      title: "lunch",
+      amount: 20.0,
+      date: DateTime(date.year, date.day, date.hour),
+      category: Category.Food,
+    ),
+    Expense(
+      title: "travel",
+      amount: 22.0,
+      date: DateTime(date.year, date.day, date.hour),
+      category: Category.Travel,
+    ),
+  ];
+
+  void _openExpenseModalOverlay() {
+    showModalBottomSheet(
+      isScrollControlled: true,
+      context: context,
+      builder: (ctx) {
+        return NewExpense(addExpense: _addExpenses);
+      },
+    );
+  }
+
+  void _addExpenses(Expense expense) {
+    setState(() {
+      expensesList.add(expense);
+    });
+  }
+
+  void _removeExpense(Expense expense) {
+    setState(() {
+      expensesList.remove(expense);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final DateTime date = DateTime.now();
-
-    final List<Expense> expensesList = [
-      Expense(
-        title: "Flutter Course",
-        amount: 19.89,
-        date: DateTime(date.year, date.day, date.hour),
-        category: Category.Work,
-      ),
-      Expense(
-        title: "lunch",
-        amount: 20.0,
-        date: DateTime(date.year, date.day, date.hour),
-        category: Category.Food,
-      ),
-      Expense(
-        title: "travel",
-        amount: 22.0,
-        date: DateTime(date.year, date.day, date.hour),
-        category: Category.Travel,
-      ),
-    ];
-
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -63,7 +78,12 @@ class _ExpensesState extends State<Expenses> {
       body: Column(
         children: [
           // Text('chart'),
-          Expanded(child: ExpensesList(expenses: expensesList)),
+          Expanded(
+            child: ExpensesList(
+              expenses: expensesList,
+              onRemoveExpense: _removeExpense,
+            ),
+          ),
         ],
       ),
     );

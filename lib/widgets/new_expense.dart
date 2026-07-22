@@ -7,7 +7,9 @@ import "package:expense_tracker/models/expense.dart";
 final formatter = DateFormat.yMd();
 
 class NewExpense extends StatefulWidget {
-  const NewExpense({super.key});
+  const NewExpense({super.key, required this.addExpense});
+
+  final void Function(Expense expense) addExpense;
 
   @override
   State<NewExpense> createState() {
@@ -35,9 +37,43 @@ class _NewExpenseState extends State<NewExpense> {
     });
   }
 
-  void submitValue() {
-    print(_titleController.text);
-    print(_amountController.text);
+  void _submitExpenseData() {
+    final enteredAmount = double.tryParse(_amountController.text);
+    bool amountIsInvalid = enteredAmount == null || enteredAmount <= 0;
+    if (_titleController.text.trim().isEmpty ||
+        amountIsInvalid ||
+        _selectedDate == null) {
+      showDialog(
+        context: context,
+        builder: (ctx) {
+          return AlertDialog(
+            title: const Text("Invalid Input"),
+            content: const Text(
+              "Please make sure a valid title, date, amount and category are entered",
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text("close"),
+              ),
+            ],
+          );
+        },
+      );
+      return;
+    }
+
+    widget.addExpense(
+      Expense(
+        title: _titleController.text,
+        amount: enteredAmount,
+        date: _selectedDate!,
+        category: _selectedCategory,
+      ),
+    );
+    Navigator.pop(context);
   }
 
   @override
@@ -50,7 +86,7 @@ class _NewExpenseState extends State<NewExpense> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsetsGeometry.all(16),
+      padding: const EdgeInsetsGeometry.fromLTRB(16,48,16,16),
       child: Column(
         children: [
           TextField(
@@ -91,7 +127,7 @@ class _NewExpenseState extends State<NewExpense> {
               ),
             ],
           ),
-          const SizedBox(height: 16,),
+          const SizedBox(height: 16),
           Row(
             children: [
               DropdownButton(
@@ -105,7 +141,7 @@ class _NewExpenseState extends State<NewExpense> {
                     )
                     .toList(),
                 onChanged: (value) {
-                  if(value == null){
+                  if (value == null) {
                     return;
                   }
                   setState(() {
@@ -120,7 +156,10 @@ class _NewExpenseState extends State<NewExpense> {
                 },
                 child: Text("Close"),
               ),
-              ElevatedButton(onPressed: submitValue, child: Text("Submit")),
+              ElevatedButton(
+                onPressed: _submitExpenseData,
+                child: Text("Submit"),
+              ),
             ],
           ),
         ],

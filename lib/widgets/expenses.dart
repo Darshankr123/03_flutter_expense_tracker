@@ -40,6 +40,7 @@ class _ExpensesState extends State<Expenses> {
 
   void _openExpenseModalOverlay() {
     showModalBottomSheet(
+      useSafeArea: true,
       isScrollControlled: true,
       context: context,
       builder: (ctx) {

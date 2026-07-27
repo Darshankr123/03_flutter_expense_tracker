@@ -1,3 +1,4 @@
+import 'package:expense_tracker/widgets/chart/chart.dart';
 import 'package:expense_tracker/widgets/expenses_list/expenses_list.dart';
 import 'package:expense_tracker/models/expense.dart';
 import 'package:expense_tracker/widgets/new_expense.dart';
@@ -54,13 +55,43 @@ class _ExpensesState extends State<Expenses> {
   }
 
   void _removeExpense(Expense expense) {
+    var expenseIndex = expensesList.indexOf(expense);
     setState(() {
       expensesList.remove(expense);
     });
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        duration: const Duration(seconds: 3),
+        content: Text("Expense deleted."),
+        action: SnackBarAction(
+          label: "Undo",
+          onPressed: () {
+            setState(() {
+              expensesList.insert(expenseIndex, expense);
+            });
+          },
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+
+    final deviceWidth = MediaQuery.of(context).size.width;
+
+    Widget mainContent = const Center(
+      child: Text('No expense found. Start adding some!'),
+    );
+
+    if (expensesList.isNotEmpty) {
+      mainContent = ExpensesList(
+        expenses: expensesList,
+        onRemoveExpense: _removeExpense,
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -73,17 +104,19 @@ class _ExpensesState extends State<Expenses> {
             icon: Icon(Icons.add, color: Colors.white, size: 28),
           ),
         ],
-        backgroundColor: Colors.purple,
+        // backgroundColor: Colors.purple,
       ),
-      body: Column(
+      body:
+      deviceWidth < 600 ? Column(
         children: [
-          // Text('chart'),
-          Expanded(
-            child: ExpensesList(
-              expenses: expensesList,
-              onRemoveExpense: _removeExpense,
-            ),
-          ),
+          Chart(expenses: expensesList),
+          Expanded(child: mainContent),
+        ],
+      ) :
+      Row(
+        children: [
+          Expanded(child: Chart(expenses: expensesList)),
+          Expanded(child: mainContent),
         ],
       ),
     );
